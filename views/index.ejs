@@ -297,11 +297,21 @@
       @media (max-width: 576px) {
         .action-buttons {
           flex-direction: column;
+          width: 100%;
         }
 
         .button {
           width: 100%;
           max-width: 100%;
+        }
+
+        .button-container {
+          width: 100%;
+          flex-direction: column;
+        }
+
+        .file-input-wrapper {
+          width: 100%;
         }
       }
 
@@ -365,7 +375,7 @@
                 <button class="button">选择图片...</button>
                 <input type="file" id="imageInput" accept="image/*" />
               </div>
-              <button id="uploadButton" class="button" disabled>
+              <button id="uploadButton" class="button" style="width: 100%;" disabled>
                 去除背景
               </button>
             </div>

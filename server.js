@@ -232,9 +232,9 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     res.json(response);
 
     // 在发送响应后删除上传的原始图片
-    fs.unlink(inputPath, (err) => {
-      if (err) logger.error(`删除原始图片失败 [ReqID:${requestId}]`, { path: inputPath, error: err });
-    });
+    // fs.unlink(inputPath, (err) => {
+    //   if (err) logger.error(`删除原始图片失败 [ReqID:${requestId}]`, { path: inputPath, error: err });
+    // });
 
     // 设置一个定时器，在客户端可能已经下载后删除处理后的图片（例如5分钟后）
     setTimeout(() => {
