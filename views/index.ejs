@@ -426,8 +426,7 @@
       // 服务器配置变量 - 由服务端注入
       // 这些占位符将被服务器环境变量替换
       const serverConfig = {
-        server: "{{SERVER_HOST}}" || "localhost",
-        port: {{SERVER_PORT}} || 3333
+        serverURL: "<%= serverURL %>"
       };
 
       document.addEventListener("DOMContentLoaded", function () {
@@ -560,9 +559,8 @@
           formData.append("image", selectedFile);
 
           try {
-            // 使用注入的配置
-            // const apiUrl = `http://${serverConfig.server}:${serverConfig.port}/upload`;
-            const apiUrl = `https://${serverConfig.server}/upload`;
+            // 使用配置
+            const apiUrl = `${serverConfig.serverURL}/upload`;
             const response = await fetch(apiUrl, {
               method: "POST",
               body: formData,

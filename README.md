@@ -40,6 +40,7 @@ http://localhost:3333
 - 后端: Node.js, Express.js
 - 图像处理: @imgly/background-removal-node
 - 文件上传: multer
+- 日志系统: Winston
 
 ## 项目结构
 
@@ -50,8 +51,30 @@ http://localhost:3333
 ├── public/           # 静态资源目录
 │   ├── index.html    # 前端页面
 │   └── processed/    # 处理后的图片存储目录
-└── uploads/          # 上传图片的临时存储目录
+├── uploads/          # 上传图片的临时存储目录
+└── app.log           # 应用日志文件(可配置)
 ```
+
+## 配置
+
+项目使用.env文件进行配置，可设置以下参数：
+
+```
+URL=服务器访问地址
+LOCAL_PORT=服务器监听端口
+LOG_LEVEL=日志级别(debug, info, warn, error)
+LOG_FILE=日志文件路径
+```
+
+## 日志系统
+
+项目使用Winston作为日志记录库，提供以下功能：
+
+- 支持多种日志级别(debug, info, warn, error)
+- 同时输出到控制台和文件(可配置)
+- 结构化日志记录，包含时间戳和其他元数据
+- 更好的错误堆栈追踪
+- 支持通过LOG_LEVEL环境变量调整日志详细程度
 
 ## 注意事项
 
