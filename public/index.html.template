@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>图片背景去除工具</title>
+    <title>removeBG</title>
     <style>
       :root {
         --bg-dark: #121212;
@@ -26,39 +26,68 @@
       }
 
       body {
-        font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: "Segoe UI", "SF Pro Display", -apple-system,
+          BlinkMacSystemFont, sans-serif;
         line-height: 1.6;
         color: var(--text-primary);
         background-color: var(--bg-dark);
         max-width: 1200px;
         margin: 0 auto;
-        padding: 40px 20px;
+        padding: 20px;
       }
 
       .container {
-        background: var(--bg-card);
-        border-radius: var(--border-radius);
-        padding: 40px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        margin-bottom: 30px;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+        margin-bottom: 20px;
       }
 
       h1 {
-        text-align: center;
         color: var(--text-primary);
-        margin-bottom: 40px;
-        font-weight: 600;
-        font-size: 2.2rem;
+        margin-bottom: 0;
+        font-weight: 500;
+        font-size: 1.8rem;
         letter-spacing: -0.5px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+      }
+
+      .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 20px;
+      }
+
+      .language-toggle {
+        display: inline-flex;
+        background: var(--bg-input);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .language-toggle button {
+        background: transparent;
+        color: var(--text-secondary);
+        border: none;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+      }
+
+      .language-toggle button.active {
+        background: var(--accent);
+        color: white;
       }
 
       .file-input-wrapper {
         position: relative;
         overflow: hidden;
         display: inline-block;
-        margin-bottom: 15px;
-        width: 100%;
+        width: auto;
       }
 
       .file-input-wrapper input[type="file"] {
@@ -75,34 +104,24 @@
         display: inline-block;
         background-color: var(--accent);
         color: white;
-        padding: 14px 20px;
+        padding: 12px 20px;
         border-radius: var(--border-radius);
         cursor: pointer;
         font-size: 16px;
         font-weight: 500;
         border: none;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
-        width: 100%;
         text-align: center;
-        min-width: 200px;
-        max-width: 100%;
+        min-width: 140px;
+        max-width: 200px;
       }
 
       .button:hover {
         background-color: var(--accent-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(108, 92, 231, 0.3);
-      }
-
-      .button:active {
-        transform: translateY(0);
       }
 
       .button:disabled {
         background-color: #4a4a4a;
         cursor: not-allowed;
-        box-shadow: none;
         opacity: 0.6;
       }
 
@@ -122,19 +141,8 @@
         background: var(--bg-input);
         border-radius: var(--border-radius);
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease;
         height: 100%;
-      }
-
-      .image-container:hover {
-        transform: translateY(-5px);
-      }
-
-      .image-container h3 {
-        margin-bottom: 20px;
-        color: var(--text-primary);
-        font-weight: 500;
-        letter-spacing: 0.5px;
+        position: relative;
       }
 
       .image-wrapper {
@@ -147,6 +155,8 @@
         border-radius: var(--border-radius);
         overflow: hidden;
         margin-bottom: 20px;
+        position: relative;
+        margin-top: 0;
       }
 
       .image-wrapper.upload-area {
@@ -157,7 +167,6 @@
         justify-content: center;
         align-items: center;
         cursor: pointer;
-        transition: all 0.3s ease;
       }
 
       .image-wrapper.upload-area:hover {
@@ -166,13 +175,23 @@
       }
 
       .image-wrapper.upload-area .icon {
-        font-size: 48px;
+        font-size: 42px;
         margin-bottom: 15px;
         color: rgba(255, 255, 255, 0.4);
       }
 
       .image-wrapper.upload-area p {
         color: var(--text-secondary);
+      }
+
+      .transparent-bg {
+        background-image: linear-gradient(45deg, #2d2d2d 25%, transparent 25%),
+          linear-gradient(-45deg, #2d2d2d 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #2d2d2d 75%),
+          linear-gradient(-45deg, transparent 75%, #2d2d2d 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        background-color: #3d3d3d;
       }
 
       .buttons-container {
@@ -188,16 +207,26 @@
         max-height: 100%;
         object-fit: contain;
         border-radius: var(--border-radius);
-        transition: all 0.3s ease;
+      }
+
+      .placeholder-text {
+        color: var(--text-secondary);
+        text-align: center;
       }
 
       #loading {
         display: none;
         text-align: center;
-        margin: 30px 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        background: rgba(30, 30, 30, 0.85);
         padding: 20px;
-        background: var(--bg-input);
         border-radius: var(--border-radius);
+        width: 80%;
+        max-width: 300px;
       }
 
       .spinner {
@@ -211,8 +240,12 @@
       }
 
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       .error-message {
@@ -227,13 +260,11 @@
 
       .download-button {
         background-color: var(--success);
-        box-shadow: 0 4px 12px rgba(0, 184, 148, 0.2);
-        margin-top: 20px;
+        margin-top: 0;
       }
 
       .download-button:hover {
         background-color: var(--success-hover);
-        box-shadow: 0 6px 16px rgba(0, 184, 148, 0.3);
       }
 
       footer {
@@ -256,75 +287,196 @@
       .action-buttons {
         width: 100%;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
+        justify-content: flex-start;
         gap: 15px;
+        margin-top: 20px;
+      }
+
+      @media (max-width: 576px) {
+        .action-buttons {
+          flex-direction: column;
+        }
+
+        .button {
+          width: 100%;
+          max-width: 100%;
+        }
+      }
+
+      .button-container {
+        display: flex;
+        gap: 15px;
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .button-container .button,
+      .button-container .file-input-wrapper {
+        flex: 0 0 auto;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>智能图片背景去除工具</h1>
+      <div class="header-container">
+        <h1>removeBG</h1>
+        <div class="language-toggle">
+          <button id="langCn" class="active">中文</button>
+          <button id="langEn">EN</button>
+        </div>
+      </div>
 
       <div id="error" class="error-message"></div>
 
-      <div id="loading">
-        <div class="spinner"></div>
-        <p>正在处理图片，请稍候...</p>
-      </div>
-
       <div id="results" class="results">
         <div class="image-container">
-          <h3>原始图片</h3>
           <div id="dropArea" class="image-wrapper upload-area">
-            <div class="icon">📁</div>
+            <div class="icon">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M13 7H11V11H7V13H11V17H13V13H17V11H13V7Z"
+                  fill="rgba(255, 255, 255, 0.4)"
+                />
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z"
+                  fill="rgba(255, 255, 255, 0.4)"
+                />
+              </svg>
+            </div>
             <p>点击或拖放图片到此处</p>
-            <img id="originalImage" src="#" alt="原始图片" style="display: none;" />
+            <img
+              id="originalImage"
+              src="#"
+              alt="原始图片"
+              style="display: none"
+            />
           </div>
           <div class="action-buttons">
-            <div class="file-input-wrapper">
-              <button class="button">选择图片</button>
-              <input type="file" id="imageInput" accept="image/*" />
+            <div class="button-container">
+              <div class="file-input-wrapper">
+                <button class="button">选择图片...</button>
+                <input type="file" id="imageInput" accept="image/*" />
+              </div>
+              <button id="uploadButton" class="button" disabled>
+                去除背景
+              </button>
             </div>
-            <button id="uploadButton" class="button" disabled>
-              上传并去除背景
-            </button>
           </div>
         </div>
 
         <div class="image-container">
-          <h3>去除背景后</h3>
-          <div class="image-wrapper">
-            <img id="processedImage" src="#" alt="处理后的图片" />
+          <div id="outputArea" class="image-wrapper upload-area transparent-bg">
+            <div class="icon">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M19 5V19H5V5H19ZM19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3Z"
+                  fill="rgba(255, 255, 255, 0.4)"
+                />
+                <path
+                  d="M14.14 11.86L12 9.72L9.86 11.86L8.44 10.44L12 6.88L15.56 10.44L14.14 11.86Z"
+                  fill="rgba(255, 255, 255, 0.4)"
+                />
+                <path d="M6 18H18V16H6V18Z" fill="rgba(255, 255, 255, 0.4)" />
+              </svg>
+            </div>
+            <p class="placeholder-text">处理后的图片将显示在这里</p>
+            <img
+              id="processedImage"
+              src=""
+              alt="处理后的图片"
+              style="display: none"
+            />
+            <div id="loading">
+              <div class="spinner"></div>
+              <p>正在处理图片，请稍候...</p>
+            </div>
           </div>
           <div class="action-buttons">
-            <button
-              id="downloadButton"
-              class="button download-button"
-              style="display: none"
-            >
-              下载图片
-            </button>
+            <div class="button-container">
+              <button
+                id="downloadButton"
+                class="button download-button"
+                style="display: none"
+              >
+                下载
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <footer>
-      &copy; 2025 ALEX Lab | Powered by AI
-    </footer>
+    <footer>&copy; 2025 ALEX Lab | Powered by AI</footer>
 
     <script>
+      // 服务器配置变量 - 由服务端注入
+      // 这些占位符将被服务器环境变量替换
+      const serverConfig = {
+        server: "{{SERVER_HOST}}" || "localhost",
+        port: {{SERVER_PORT}} || 3333
+      };
+
       document.addEventListener("DOMContentLoaded", function () {
         const imageInput = document.getElementById("imageInput");
         const uploadButton = document.getElementById("uploadButton");
         const originalImage = document.getElementById("originalImage");
         const processedImage = document.getElementById("processedImage");
+        const outputArea = document.getElementById("outputArea");
         const resultsDiv = document.getElementById("results");
         const loadingDiv = document.getElementById("loading");
         const errorDiv = document.getElementById("error");
         const downloadButton = document.getElementById("downloadButton");
         const dropArea = document.getElementById("dropArea");
+        const langCn = document.getElementById("langCn");
+        const langEn = document.getElementById("langEn");
+
+        // 语言切换功能
+        langCn.addEventListener("click", function() {
+          setLanguage("cn");
+        });
+
+        langEn.addEventListener("click", function() {
+          setLanguage("en");
+        });
+
+        function setLanguage(lang) {
+          langCn.classList.remove("active");
+          langEn.classList.remove("active");
+
+          if (lang === "cn") {
+            langCn.classList.add("active");
+            document.querySelector("#dropArea p").textContent = "点击或拖放图片到此处";
+            document.querySelector(".placeholder-text").textContent = "处理后的图片将显示在这里";
+            document.querySelector("#loading p").textContent = "正在处理图片，请稍候...";
+            document.querySelector(".file-input-wrapper .button").textContent = "选择图片...";
+            uploadButton.textContent = "去除背景";
+            downloadButton.textContent = "下载";
+            errorDiv.textContent = errorDiv.textContent.replace("Error", "错误").replace("Failed", "失败");
+          } else {
+            langEn.classList.add("active");
+            document.querySelector("#dropArea p").textContent = "Click or drop image here";
+            document.querySelector(".placeholder-text").textContent = "Processed image will appear here";
+            document.querySelector("#loading p").textContent = "Processing image, please wait...";
+            document.querySelector(".file-input-wrapper .button").textContent = "Select image...";
+            uploadButton.textContent = "Remove BG";
+            downloadButton.textContent = "Download";
+            errorDiv.textContent = errorDiv.textContent.replace("错误", "Error").replace("失败", "Failed");
+          }
+        }
 
         let selectedFile = null;
 
@@ -336,22 +488,6 @@
         function preventDefaults(e) {
           e.preventDefault();
           e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-          dropArea.addEventListener(eventName, highlight, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-          dropArea.addEventListener(eventName, unhighlight, false);
-        });
-
-        function highlight() {
-          dropArea.classList.add('highlight');
-        }
-
-        function unhighlight() {
-          dropArea.classList.remove('highlight');
         }
 
         dropArea.addEventListener('drop', handleDrop, false);
@@ -414,11 +550,19 @@
           uploadButton.disabled = true;
           errorDiv.style.display = "none";
 
+          // 隐藏输出区域的图标和文本
+          const outputAreaIcon = outputArea.querySelector(".icon");
+          const outputAreaText = outputArea.querySelector(".placeholder-text");
+          if (outputAreaIcon) outputAreaIcon.style.display = "none";
+          if (outputAreaText) outputAreaText.style.display = "none";
+
           const formData = new FormData();
           formData.append("image", selectedFile);
 
           try {
-            const response = await fetch("http://localhost:3333/upload", {
+            // 使用注入的配置
+            const apiUrl = `http://${serverConfig.server}:${serverConfig.port}/upload`;
+            const response = await fetch(apiUrl, {
               method: "POST",
               body: formData,
             });
@@ -428,6 +572,17 @@
             if (response.ok) {
               // 显示处理后的图片
               processedImage.src = data.imageUrl;
+              processedImage.style.display = "block";
+              outputArea.classList.remove("upload-area");
+              // 保持透明背景方格
+              outputArea.classList.add("transparent-bg");
+
+              // 隐藏占位内容
+              const outputAreaIcon = outputArea.querySelector(".icon");
+              const outputAreaText = outputArea.querySelector(".placeholder-text");
+              if (outputAreaIcon) outputAreaIcon.style.display = "none";
+              if (outputAreaText) outputAreaText.style.display = "none";
+
               downloadButton.style.display = "inline-block";
 
               // 设置下载按钮

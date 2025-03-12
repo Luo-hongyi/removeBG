@@ -5,9 +5,11 @@ const fs = require('fs');
 const cors = require('cors');
 const sharp = require('sharp');
 const { removeBackground, removeForeground } = require('@imgly/background-removal-node');
+require('dotenv').config();
 
 const app = express();
-const port = 3333;
+const port = process.env.PORT || 3333;
+const server = process.env.SERVER || 'localhost';
 
 // 启用CORS
 app.use(cors());
@@ -19,13 +21,23 @@ app.use(express.static('public'));
 const uploadDir = path.join(__dirname, 'uploads');
 const processedDir = path.join(__dirname, 'public/processed');
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const createDirOrClear = (dir) => {
+  if (fs.existsSync(dir)) {
+    // 清空目录
+    fs.readdirSync(dir).forEach(file => {
+      const filePath = path.join(dir, file);
+      if (fs.lstatSync(filePath).isFile()) {
+        fs.unlinkSync(filePath);
+      }
+    });
+  } else {
+    // 创建目录
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
 
-if (!fs.existsSync(processedDir)) {
-  fs.mkdirSync(processedDir, { recursive: true });
-}
+createDirOrClear(uploadDir);
+createDirOrClear(processedDir);
 
 // 配置multer存储
 const storage = multer.diskStorage({
@@ -56,6 +68,22 @@ const upload = multer({
 
     cb(null, true);
   }
+});
+
+app.get('/', (req, res) => {
+  const filePath = path.join(__dirname, 'public', 'index.html.template');
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).send('Error reading file');
+    }
+
+    // 替换占位符
+    const html = data
+      .replace(/{{SERVER_HOST}}/g, server)
+      .replace(/{{SERVER_PORT}}/g, port);
+
+    res.send(html);
+  });
 });
 
 // 处理图片上传和背景去除
@@ -132,12 +160,35 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       imageUrl: `/processed/${filename}`
     });
     console.log('请求处理完成');
+
+    // 在发送响应后删除上传的原始图片
+    fs.unlink(inputPath, (err) => {
+      if (err) console.error(`删除原始图片失败: ${err}`);
+      else console.log(`已删除原始图片: ${inputPath}`);
+    });
+
+    // 设置一个定时器，在客户端可能已经下载后删除处理后的图片（例如5分钟后）
+    setTimeout(() => {
+      fs.unlink(outputPath, (err) => {
+        if (err) console.error(`删除处理后的图片失败: ${err}`);
+        else console.log(`已删除处理后的图片: ${outputPath}`);
+      });
+    }, 5 * 60 * 1000); // 5分钟
+
   } catch (error) {
     console.error('背景去除过程中出错：', error);
     res.status(500).json({ error: '处理图片时出错', details: error.message });
   }
 });
 
+// 提供服务器配置接口
+app.get('/config', (req, res) => {
+  res.json({
+    server: server,
+    port: port
+  });
+});
+
 app.listen(port, () => {
-  console.log(`服务器运行在 http://localhost:${port}`);
+  console.log(`服务器运行在 http://${server}:${port}`);
 });
