@@ -561,7 +561,8 @@
 
           try {
             // 使用注入的配置
-            const apiUrl = `http://${serverConfig.server}:${serverConfig.port}/upload`;
+            // const apiUrl = `http://${serverConfig.server}:${serverConfig.port}/upload`;
+            const apiUrl = `http://${serverConfig.server}/upload`;
             const response = await fetch(apiUrl, {
               method: "POST",
               body: formData,
