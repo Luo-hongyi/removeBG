@@ -1,0 +1,18 @@
+{
+  "name": "removeBG",
+  "id": "removebg",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": ["https://s3.bzndental.com"]
+  },
+  "relaunchButtons": [
+    {
+      "command": "remove",
+      "name": "removeBG",
+      "multipleSelection": true
+    }
+  ]
+}

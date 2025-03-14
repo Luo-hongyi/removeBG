@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>removeBG</title>
+    <style>
+      :root {
+        --bg-dark: #121212;
+        --bg-card: #1e1e1e;
+        --bg-input: #2d2d2d;
+        --text-primary: #ffffff;
+        --text-secondary: #b3b3b3;
+        --accent: #6c5ce7;
+        --accent-hover: #8075e5;
+        --success: #00b894;
+        --success-hover: #00d1a3;
+        --danger: #ff5e57;
+        --border-radius: 8px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", "SF Pro Display", -apple-system,
+          BlinkMacSystemFont, sans-serif;
+        line-height: 1.6;
+        color: var(--text-primary);
+        background-color: var(--bg-dark);
+        padding: 16px;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .container {
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+        margin-bottom: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      h1 {
+        color: var(--text-primary);
+        margin-bottom: 0;
+        font-weight: 500;
+        font-size: 1.5rem;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+      }
+
+      .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 16px;
+      }
+
+      .language-toggle {
+        display: inline-flex;
+        background: var(--bg-input);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .language-toggle button {
+        background: transparent;
+        color: var(--text-secondary);
+        border: none;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s ease;
+      }
+
+      .language-toggle button.active {
+        background: var(--accent);
+        color: white;
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: auto;
+      }
+
+      .file-input-wrapper input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      .button {
+        display: inline-block;
+        background-color: var(--accent);
+        color: white;
+        padding: 8px 16px;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        text-align: center;
+        min-width: 120px;
+        max-width: 160px;
+      }
+
+      .button:hover {
+        background-color: var(--accent-hover);
+      }
+
+      .button:disabled {
+        background-color: #4a4a4a;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .results {
+        display: flex;
+        gap: 16px;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .image-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 16px;
+        background: var(--bg-input);
+        border-radius: var(--border-radius);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        flex: 1;
+        min-width: 0;
+        position: relative;
+      }
+
+      .image-wrapper {
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        margin-bottom: 16px;
+        position: relative;
+      }
+
+      .image-wrapper.upload-area {
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        background: rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .image-wrapper.upload-area:hover {
+        border-color: var(--accent);
+        background: rgba(108, 92, 231, 0.05);
+      }
+
+      .image-wrapper.upload-area .icon {
+        font-size: 32px;
+        margin-bottom: 12px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .image-wrapper.upload-area p {
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+
+      .transparent-bg {
+        background-image: linear-gradient(45deg, #2d2d2d 25%, transparent 25%),
+          linear-gradient(-45deg, #2d2d2d 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #2d2d2d 75%),
+          linear-gradient(-45deg, transparent 75%, #2d2d2d 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        background-color: #3d3d3d;
+      }
+
+      img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: var(--border-radius);
+      }
+
+      .placeholder-text {
+        color: var(--text-secondary);
+        text-align: center;
+        font-size: 14px;
+      }
+
+      #loading {
+        display: none;
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        background: rgba(30, 30, 30, 0.85);
+        padding: 16px;
+        border-radius: var(--border-radius);
+        width: 80%;
+        max-width: 200px;
+      }
+
+      .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        border-top: 3px solid var(--accent);
+        width: 32px;
+        height: 32px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 12px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error-message {
+        color: var(--danger);
+        text-align: center;
+        margin: 12px 0;
+        padding: 8px 16px;
+        background: rgba(255, 94, 87, 0.1);
+        border-radius: var(--border-radius);
+        display: none;
+        font-size: 14px;
+      }
+
+      .paste-button {
+        background-color: var(--success);
+        margin-top: 0;
+      }
+
+      .paste-button:disabled {
+        background-color: #4a4a4a;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .paste-button:hover {
+        background-color: var(--success-hover);
+      }
+
+      .action-buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .button-container {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .button-container .button,
+      .button-container .file-input-wrapper {
+        flex: 0 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header-container">
+        <div class="language-toggle" style="margin-left: auto">
+          <button id="langCn" class="active">中文</button>
+          <button id="langEn">EN</button>
+        </div>
+      </div>
+
+      <div id="error" class="error-message"></div>
+
+      <div id="results" class="results">
+        <div class="image-container">
+          <div id="dropArea" class="image-wrapper upload-area">
+            <div class="icon">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M13 7H11V11H7V13H11V17H13V13H17V11H13V7Z"
+                  fill="rgba(255, 255, 255, 0.4)"
+                />
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z"
+                  fill="rgba(255, 255, 255, 0.4)"
+                />
+              </svg>
+            </div>
+            <p>点击或拖放图片到此处</p>
+            <img
+              id="originalImage"
+              src="#"
+              alt="原始图片"
+              style="display: none"
+            />
+          </div>
+          <div class="action-buttons">
+            <div class="button-container">
+              <div class="file-input-wrapper">
+                <button class="button">选择图片...</button>
+                <input type="file" id="imageInput" accept="image/*" />
+              </div>
+              <button
+                id="uploadButton"
+                class="button"
+                style="width: 100%"
+                disabled
+              >
+                去除背景
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="image-container">
+          <div id="outputArea" class="image-wrapper upload-area transparent-bg">
+            <div class="icon">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M19 5V19H5V5H19ZM19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3Z"
+                  fill="rgba(255, 255, 255, 0.4)"
+                />
+                <path
+                  d="M14.14 11.86L12 9.72L9.86 11.86L8.44 10.44L12 6.88L15.56 10.44L14.14 11.86Z"
+                  fill="rgba(255, 255, 255, 0.4)"
+                />
+                <path d="M6 18H18V16H6V18Z" fill="rgba(255, 255, 255, 0.4)" />
+              </svg>
+            </div>
+            <p class="placeholder-text">处理后的图片将显示在这里</p>
+            <img
+              id="processedImage"
+              src=""
+              alt="处理后的图片"
+              style="display: none"
+            />
+            <div id="loading">
+              <div class="spinner"></div>
+              <p>正在处理图片，请稍候...</p>
+            </div>
+          </div>
+          <div class="action-buttons">
+            <div class="button-container">
+              <button id="pasteButton" class="button paste-button" disabled>
+                粘贴到 Figma
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 服务器配置变量 - 由服务端注入
+      const serverConfig = {
+        serverURL: "https://s3.bzndental.com",
+      };
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const imageInput = document.getElementById("imageInput");
+        const uploadButton = document.getElementById("uploadButton");
+        const originalImage = document.getElementById("originalImage");
+        const processedImage = document.getElementById("processedImage");
+        const outputArea = document.getElementById("outputArea");
+        const resultsDiv = document.getElementById("results");
+        const loadingDiv = document.getElementById("loading");
+        const errorDiv = document.getElementById("error");
+        const pasteButton = document.getElementById("pasteButton");
+        const dropArea = document.getElementById("dropArea");
+        const langCn = document.getElementById("langCn");
+        const langEn = document.getElementById("langEn");
+        const selectButton = document.querySelector(
+          ".file-input-wrapper .button"
+        );
+
+        // 语言切换功能
+        langCn.addEventListener("click", function () {
+          setLanguage("cn");
+        });
+
+        langEn.addEventListener("click", function () {
+          setLanguage("en");
+        });
+
+        function setLanguage(lang) {
+          langCn.classList.remove("active");
+          langEn.classList.remove("active");
+
+          if (lang === "cn") {
+            langCn.classList.add("active");
+            document.querySelector("#dropArea p").textContent =
+              "点击或拖放图片到此处";
+            document.querySelector(".placeholder-text").textContent =
+              "处理后的图片将显示在这里";
+            document.querySelector("#loading p").textContent =
+              "正在处理图片，请稍候...";
+            document.querySelector(".file-input-wrapper .button").textContent =
+              "选择图片...";
+            uploadButton.textContent = "去除背景";
+            pasteButton.textContent = "粘贴到 Figma";
+            errorDiv.textContent = errorDiv.textContent
+              .replace("Error", "错误")
+              .replace("Failed", "失败");
+          } else {
+            langEn.classList.add("active");
+            document.querySelector("#dropArea p").textContent =
+              "Click or drop image here";
+            document.querySelector(".placeholder-text").textContent =
+              "Processed image will appear here";
+            document.querySelector("#loading p").textContent =
+              "Processing image, please wait...";
+            document.querySelector(".file-input-wrapper .button").textContent =
+              "Select image...";
+            uploadButton.textContent = "Remove BG";
+            pasteButton.textContent = "Paste to Figma";
+            errorDiv.textContent = errorDiv.textContent
+              .replace("错误", "Error")
+              .replace("失败", "Failed");
+          }
+        }
+
+        let selectedFile = null;
+
+        // 拖放功能
+        ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+          dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        dropArea.addEventListener("drop", handleDrop, false);
+
+        function handleDrop(e) {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+
+          if (files.length > 0) {
+            imageInput.files = files;
+            handleFiles(files[0]);
+          }
+        }
+
+        // 点击上传区域也能触发文件选择
+        dropArea.addEventListener("click", function () {
+          imageInput.click();
+        });
+
+        // 监听文件选择
+        imageInput.addEventListener("change", function (e) {
+          if (e.target.files.length > 0) {
+            handleFiles(e.target.files[0]);
+          }
+        });
+
+        function handleFiles(file) {
+          selectedFile = file;
+
+          if (selectedFile) {
+            // 启用上传按钮，禁用粘贴按钮
+            uploadButton.disabled = false;
+            pasteButton.disabled = true;
+            selectButton.disabled = false;
+
+            // 显示原始图片预览
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              originalImage.src = e.target.result;
+              originalImage.style.display = "block";
+              dropArea.classList.remove("upload-area");
+              document.querySelector("#dropArea .icon").style.display = "none";
+              document.querySelector("#dropArea p").style.display = "none";
+
+              // 清除错误消息
+              errorDiv.style.display = "none";
+            };
+            reader.readAsDataURL(selectedFile);
+          } else {
+            uploadButton.disabled = true;
+            pasteButton.disabled = true;
+            selectButton.disabled = false;
+          }
+        }
+
+        // 处理上传和背景去除
+        uploadButton.addEventListener("click", async function () {
+          if (!selectedFile) {
+            return;
+          }
+
+          // 显示加载状态，禁用所有按钮
+          loadingDiv.style.display = "block";
+          uploadButton.disabled = true;
+          pasteButton.disabled = true;
+          selectButton.disabled = true;
+          errorDiv.style.display = "none";
+
+          // 隐藏输出区域的图标和文本
+          const outputAreaIcon = outputArea.querySelector(".icon");
+          const outputAreaText = outputArea.querySelector(".placeholder-text");
+          if (outputAreaIcon) outputAreaIcon.style.display = "none";
+          if (outputAreaText) outputAreaText.style.display = "none";
+
+          const formData = new FormData();
+          formData.append("image", selectedFile);
+
+          try {
+            // 使用配置
+            const apiUrl = `${serverConfig.serverURL}/upload`;
+            const response = await fetch(apiUrl, {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              // 显示处理后的图片
+              processedImage.src = data.imageUrl;
+              processedImage.style.display = "block";
+              outputArea.classList.remove("upload-area");
+              // 保持透明背景方格
+              outputArea.classList.add("transparent-bg");
+
+              // 隐藏占位内容
+              const outputAreaIcon = outputArea.querySelector(".icon");
+              const outputAreaText =
+                outputArea.querySelector(".placeholder-text");
+              if (outputAreaIcon) outputAreaIcon.style.display = "none";
+              if (outputAreaText) outputAreaText.style.display = "none";
+
+              // 启用粘贴按钮和选择按钮
+              pasteButton.disabled = false;
+              selectButton.disabled = false;
+
+              // 设置粘贴按钮
+              pasteButton.onclick = function () {
+                parent.postMessage(
+                  {
+                    pluginMessage: {
+                      type: "paste-to-figma",
+                      imageUrl: data.imageUrl,
+                    },
+                  },
+                  "*"
+                );
+              };
+            } else {
+              throw new Error(data.error || "处理图片时出错");
+            }
+          } catch (error) {
+            errorDiv.textContent = error.message || "上传或处理图片时出错";
+            errorDiv.style.display = "block";
+          } finally {
+            loadingDiv.style.display = "none";
+            uploadButton.disabled = false;
+            selectButton.disabled = false;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

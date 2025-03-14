@@ -195,7 +195,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
 
       const options= {
         debug: true,
-        model: 'small',
+        // model: 'small',
         output: {
           format: 'image/png',
           quality: 1.0,
